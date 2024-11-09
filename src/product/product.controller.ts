@@ -1,15 +1,15 @@
 /* eslint-disable prettier/prettier */
-import { Controller, Post, Get, Put, Delete, Body, Param, UseGuards, UsePipes, Res, HttpStatus, Req } from '@nestjs/common';
+import { Controller, Post, Get, Put, Delete, Body, Param, UseGuards, UsePipes, Res, HttpStatus, Req, Query } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/roles.guard';
 import { ZodValidationPipe } from 'src/common/pipes/zod-validation.pipe';
 import { createProductSchema } from 'src/schemas/product/create-product.schema';
-import { updateProductSchema } from 'src/schemas/product/update-product.schema';
 import { deleteProductSchema } from 'src/schemas/product/delete-product.schema';
 import { Response } from 'express';
 import { sendResponse } from 'src/common/utils/sendResponse';
 import { IGetUserAuthInfoRequest } from 'src/types/express';
+import pick from 'src/types/pick';
 
 @Controller('api/v1/products')
 export class ProductController {
@@ -28,7 +28,7 @@ export class ProductController {
             const product = await this.productService.createProduct(
                 userId,
                 data.name,
-                data.description || '', 
+                data.description || '',
                 data.price,
                 data.category
             );
@@ -50,9 +50,12 @@ export class ProductController {
     }
 
     @Get()
-    async getProducts(@Res() res: Response) {
+    async getProducts(@Res() res: Response, @Query() query: any) {
+        const filters = pick(query, ['name']);
+        const options = pick(query, ['limit', 'page', 'sortBy', 'sortOrder']);
+
         try {
-            const products = await this.productService.getProducts();
+            const products = await this.productService.getProducts(filters, options);
             return sendResponse(res, {
                 statusCode: HttpStatus.OK,
                 success: true,
@@ -83,7 +86,6 @@ export class ProductController {
                 });
             }
 
-
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { userId, ...productData } = product;
 
@@ -103,9 +105,8 @@ export class ProductController {
         }
     }
 
-
     @UseGuards(JwtAuthGuard, RolesGuard)
-    @UsePipes(new ZodValidationPipe(updateProductSchema))
+    // @UsePipes(new ZodValidationPipe(updateProductSchema))
     @Put(':id')
     async updateProduct(
         @Param('id') id: string,
@@ -113,8 +114,26 @@ export class ProductController {
         @Res() res: Response,
     ) {
         try {
-            const updatedProduct = await this.productService.updateProduct(+id, data);
-            if (!updatedProduct) {
+            const parsedId = parseInt(id, 10);
+            if (isNaN(parsedId)) {
+                return sendResponse(res, {
+                    statusCode: HttpStatus.BAD_REQUEST,
+                    success: false,
+                    message: 'Invalid product ID',
+                    errors: [{ field: 'id', message: 'Product ID must be a valid number' }],
+                });
+            }
+            if (typeof data !== 'object' || data === null) {
+                return sendResponse(res, {
+                    statusCode: HttpStatus.BAD_REQUEST,
+                    success: false,
+                    message: 'Invalid request format. Expected JSON object.',
+                    errors: [{ field: 'body', message: 'Request body must be a JSON object.' }],
+                });
+            }
+
+            const existingProduct = await this.productService.getProductById(parsedId);
+            if (!existingProduct) {
                 return sendResponse(res, {
                     statusCode: HttpStatus.NOT_FOUND,
                     success: false,
@@ -122,6 +141,8 @@ export class ProductController {
                     errors: [{ field: 'id', message: `No product found with ID ${id}` }],
                 });
             }
+
+            const updatedProduct = await this.productService.updateProduct(parsedId, data);
             return sendResponse(res, {
                 statusCode: HttpStatus.OK,
                 success: true,
@@ -139,11 +160,25 @@ export class ProductController {
     }
 
     @UseGuards(JwtAuthGuard, RolesGuard)
-    @UsePipes(new ZodValidationPipe(deleteProductSchema))
     @Delete(':id')
     async deleteProduct(@Param('id') id: string, @Res() res: Response) {
+        const parsedId = deleteProductSchema.safeParse({ id });
+
+        if (!parsedId.success) {
+            return sendResponse(res, {
+                statusCode: HttpStatus.BAD_REQUEST,
+                success: false,
+                message: 'Invalid ID format',
+                errors: parsedId.error.errors.map(err => ({
+                    field: String(err.path[0]),
+                    message: err.message,
+                })),
+                data: null,
+            });
+        }
+
         try {
-            const deleted = await this.productService.deleteProduct(+id);
+            const deleted = await this.productService.deleteProduct(+parsedId.data.id);
 
             if (!deleted) {
                 return sendResponse(res, {
@@ -171,4 +206,5 @@ export class ProductController {
             });
         }
     }
+
 }

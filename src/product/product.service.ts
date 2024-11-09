@@ -2,7 +2,8 @@
 
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { Product } from '@prisma/client';
+import { Prisma, Product } from '@prisma/client';
+import { paginationHelper } from 'src/types/paginationHelper';
 
 @Injectable()
 export class ProductService {
@@ -20,18 +21,50 @@ export class ProductService {
         });
     }
 
-    async getProducts() {
-        return this.prisma.product.findMany({
-            select: {
-                id: true,
-                name: true,
-                description: true,
-                price: true,
-                category: true,
-                createdAt: true,
-                updatedAt: true,
-            },
+    async getProducts(filters: any, options: any) {
+        const { limit, page, skip, sortBy, sortOrder } = paginationHelper.calculatePagination(options);
+        const { name } = filters;
+        const andConditions: any[] = [];
+
+        if (name) {
+            andConditions.push({
+                name: {
+                    contains: name,
+                    mode: 'insensitive',
+                }
+            });
+        }
+
+        const whereConditions: Prisma.ProductWhereInput =
+            andConditions.length > 0 ? { AND: andConditions } : {};
+
+        const result = await this.prisma.product.findMany({
+            where: whereConditions,
+            skip: skip,
+            take: limit,
+            orderBy: sortBy && sortOrder
+                ? { [sortBy]: sortOrder }
+                : { createdAt: 'desc' },
         });
+
+        const filteredResult = result.map(product => {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { userId, ...rest } = product;
+            return rest;
+        });
+
+        const total = await this.prisma.product.count({
+            where: whereConditions,
+        });
+
+        return {
+            meta: {
+                total,
+                page,
+                limit,
+            },
+            data: filteredResult,
+        };
     }
 
 
