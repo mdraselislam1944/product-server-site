@@ -19,6 +19,21 @@ model Product {
   description String
   price       Int
   category    Int
-  createdAt   DateTime @default(now()) 
-  updatedAt   DateTime @updatedAt      
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id])
+}
+
+model User {
+  id       Int       @id @default(autoincrement())
+  email    String    @unique
+  password String
+  role     UserRole  @default(user)
+  products Product[] 
+}
+
+enum UserRole {
+  admin
+  user
 }
