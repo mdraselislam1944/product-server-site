@@ -1,5 +1,6 @@
 /* eslint-disable prettier/prettier */
-import { Injectable } from '@nestjs/common';
+
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Product } from '@prisma/client';
 
@@ -22,10 +23,10 @@ export class ProductService {
     async getProducts() {
         return this.prisma.product.findMany();
     }
+
     async getProductById(id: number): Promise<Product | null> {
         return this.prisma.product.findUnique({
             where: { id },
-            include: { user: true },
         });
     }
 
@@ -36,9 +37,17 @@ export class ProductService {
         });
     }
 
-    async deleteProduct(id: number): Promise<void> {
-        await this.prisma.product.delete({
-            where: { id },
-        });
+    async deleteProduct(id: number): Promise<boolean> {
+        try {
+            await this.prisma.product.delete({
+                where: { id },
+            });
+            return true;
+        } catch (error) {
+            if (error.code === 'P2025') {
+                throw new NotFoundException(`Product with ID ${id} not found`);
+            }
+            throw error;
+        }
     }
 }
