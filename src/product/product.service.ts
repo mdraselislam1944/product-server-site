@@ -21,8 +21,19 @@ export class ProductService {
     }
 
     async getProducts() {
-        return this.prisma.product.findMany();
+        return this.prisma.product.findMany({
+            select: {
+                id: true,
+                name: true,
+                description: true,
+                price: true,
+                category: true,
+                createdAt: true,
+                updatedAt: true,
+            },
+        });
     }
+
 
     async getProductById(id: number): Promise<Product | null> {
         return this.prisma.product.findUnique({

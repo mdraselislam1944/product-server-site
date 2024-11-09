@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import { Controller, Post, Get, Put, Delete, Body, Param, UseGuards, UsePipes, Res, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Get, Put, Delete, Body, Param, UseGuards, UsePipes, Res, HttpStatus, Req } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/roles.guard';
@@ -9,6 +9,7 @@ import { updateProductSchema } from 'src/schemas/product/update-product.schema';
 import { deleteProductSchema } from 'src/schemas/product/delete-product.schema';
 import { Response } from 'express';
 import { sendResponse } from 'src/common/utils/sendResponse';
+import { IGetUserAuthInfoRequest } from 'src/types/express';
 
 @Controller('api/v1/products')
 export class ProductController {
@@ -18,11 +19,20 @@ export class ProductController {
     @Post()
     @UsePipes(new ZodValidationPipe(createProductSchema))
     async createProduct(
-        @Body() data: { userId: number; name: string; description: string; price: number; category: number },
+        @Body() data: { name: string; description?: string; price: number; category: number },
+        @Req() req: IGetUserAuthInfoRequest,
         @Res() res: Response,
     ) {
+        const { userId } = req.user;
         try {
-            const product = await this.productService.createProduct(data.userId, data.name, data.description, data.price, data.category);
+            const product = await this.productService.createProduct(
+                userId,
+                data.name,
+                data.description || '', 
+                data.price,
+                data.category
+            );
+
             return sendResponse(res, {
                 statusCode: HttpStatus.CREATED,
                 success: true,
@@ -63,6 +73,7 @@ export class ProductController {
     async getProduct(@Param('id') id: string, @Res() res: Response) {
         try {
             const product = await this.productService.getProductById(+id);
+
             if (!product) {
                 return sendResponse(res, {
                     statusCode: HttpStatus.NOT_FOUND,
@@ -71,11 +82,16 @@ export class ProductController {
                     errors: [{ field: 'id', message: `No product found with ID ${id}` }],
                 });
             }
+
+
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { userId, ...productData } = product;
+
             return sendResponse(res, {
                 statusCode: HttpStatus.OK,
                 success: true,
                 message: 'Product retrieved successfully',
-                data: product,
+                data: productData,
             });
         } catch (error) {
             return sendResponse(res, {
@@ -86,6 +102,7 @@ export class ProductController {
             });
         }
     }
+
 
     @UseGuards(JwtAuthGuard, RolesGuard)
     @UsePipes(new ZodValidationPipe(updateProductSchema))
