@@ -2,8 +2,8 @@
 import { z } from 'zod';
 
 export const createProductSchema = z.object({
-    name: z.string().min(3),
-    description: z.string().min(10).optional(),
+    name: z.string().trim(),
+    description: z.string().trim().optional(),
     price: z.number().positive(),
-    category: z.number().int().positive(),
+    category: z.string().trim(),
 });

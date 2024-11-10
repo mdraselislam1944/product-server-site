@@ -3,8 +3,8 @@
 import { z } from 'zod';
 
 export const updateProductSchema = z.object({
-    name: z.string().min(3).optional(),
-    description: z.string().min(10).optional(),
+    name: z.string().trim().optional(),
+    description: z.string().trim().optional(),
     price: z.number().positive().optional(),
-    category: z.number().int().positive().optional(),
+    category: z.string().trim().optional(),
 });

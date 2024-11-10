@@ -18,11 +18,13 @@ model Product {
   name        String
   description String
   price       Int
-  category    Int
+  category    String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   userId      Int
   user        User     @relation(fields: [userId], references: [id])
+  
+  @@index([name, description], map: "product_search_idx")
 }
 
 model User {
