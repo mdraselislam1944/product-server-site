@@ -7,7 +7,7 @@ import { UserSignupDto } from 'src/dto/user-signup.dto';
 import { UserLoginDto } from 'src/dto/user-login.dto';
 
 
-@Controller('api/v1')
+@Controller('api/v1/auth')
 export class UserController {
   constructor(private userService: UserService) { }
 

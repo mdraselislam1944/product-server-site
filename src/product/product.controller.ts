@@ -13,7 +13,7 @@ import { IGetUserAuthInfoRequest } from 'src/types/express';
 import pick from 'src/types/pick';
 
 @ApiTags('Products')
-@Controller('api/v1/products')
+@Controller('products')
 export class ProductController {
     constructor(private productService: ProductService) { }
 

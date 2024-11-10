@@ -39,8 +39,25 @@ The **Product Management API** is a backend service built using **NestJS** to ma
 
 ## API Endpoints
 
+### swagger api end point
+- **GET api**
+**
+    - Get api documentation all response there.
+
 ### Authentication
-- **POST /auth/login**
+- **POST api/v1/auth/signup**
+**
+    - signup or registration user.
+    - **Request Body**: `{ "email": "string", "password": "string" }`
+    - **Response**: `{ "user information" }`
+
+- **PUT /api/v1/auth/user/:id**
+**
+    - role change as an admin
+    - **Request Body**: `{ "role": "admin"}`
+    - **Response**: `{ "user information" }`
+
+- **POST api/v1/auth/login**
     - Logs in a user and returns a JWT token.
     - **Request Body**: `{ "email": "string", "password": "string" }`
     - **Response**: `{ "access_token": "JWT token" }`
@@ -57,10 +74,16 @@ The **Product Management API** is a backend service built using **NestJS** to ma
           "category": "string"
         }
         ```
+    - **admin jwt token**:
+        ```json
+        {
+          "authorization": "Bearer token"
+        }
+        ```
     - **Response**: `{ "id": "integer", "name": "string", "description": "string", "price": "integer", "category": "string" }`
 
 - **GET /products**
-    - Retrieves all products.
+    - Retrieves all products. 
     - **Response**: 
         ```json
         [
@@ -98,10 +121,23 @@ The **Product Management API** is a backend service built using **NestJS** to ma
           "category": "string"
         }
         ```
+        **admin jwt token**:
+        ```json
+        {
+          "authorization": "Bearer token"
+        }
+        ```
+
     - **Response**: Updated product object.
 
 - **DELETE /products/:id**
     - Deletes a product by ID.
+        - **admin jwt token**:
+        ```json
+        {
+          "authorization": "Bearer token"
+        }
+        ```
     - **Response**: `{ "message": "Product deleted successfully" }`
 
 
@@ -111,7 +147,7 @@ The **Product Management API** is a backend service built using **NestJS** to ma
 ### 1. Clone the repository
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/mdraselislam1944/product-server-site
 cd product_management
 ```
 
@@ -205,5 +241,3 @@ This project is licensed under the **UNLICENSED** license.
 6. **Testing**: Instructions for running tests with Jest.
 7. **Configuration**: Explains how to manage the database with Prisma.
 8. **License**: States the project license.
-
-This README is a comprehensive guide for anyone using or developing with the **Product Management API**. It covers setup, endpoints, testing, and environment configurations clearly for developers.
