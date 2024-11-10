@@ -3,10 +3,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma, Product } from '@prisma/client';
-import { IPaginationOptions, paginationHelper } from 'src/types/paginationHelper';
+import { IPaginationOptions, paginationHelper } from '../types/paginationHelper';
+
 
 @Injectable()
 export class ProductService {
+    prismaService: any;
     constructor(private prisma: PrismaService) { }
 
     async createProduct(
