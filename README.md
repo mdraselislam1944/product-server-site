@@ -1,76 +1,209 @@
-## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+# Product Management API
 
-## Project setup
+## Overview
+
+The **Product Management API** is a backend service built using **NestJS** to manage products and users for an e-commerce or inventory management system. This API allows administrators to manage products and users through secure endpoints, including JWT authentication for user roles (admin/user).
+
+
+
+## Table of Contents
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [API Endpoints](#api-endpoints)
+- [Setup](#setup)
+- [Configuration](#configuration)
+- [Running the Project](#running-the-project)
+- [Testing](#testing)
+- [License](#license)
+
+
+
+## Features
+- **User Authentication**: JWT-based authentication system with Passport.js.
+- **Product Management**: Admin users can create, update, and delete products.
+- **User Management**: User roles (admin, user) for different access levels.
+
+
+
+## Tech Stack
+- **Backend**: NestJS (v10.x)
+- **Database**: PostgreSQL
+- **ORM**: Prisma (v5.22.0)
+- **Authentication**: JWT (jsonwebtoken, passport-jwt)
+- **Validation**: class-validator, zod
+- **Testing**: Jest, Supertest
+- **Environment Management**: dotenv
+
+
+
+## API Endpoints
+
+### Authentication
+- **POST /auth/login**
+    - Logs in a user and returns a JWT token.
+    - **Request Body**: `{ "email": "string", "password": "string" }`
+    - **Response**: `{ "access_token": "JWT token" }`
+
+### Product Management
+- **POST /products**
+    - Creates a new product.
+    - **Request Body**:
+        ```json
+        {
+          "name": "string",
+          "description": "string",
+          "price": "integer",
+          "category": "string"
+        }
+        ```
+    - **Response**: `{ "id": "integer", "name": "string", "description": "string", "price": "integer", "category": "string" }`
+
+- **GET /products**
+    - Retrieves all products.
+    - **Response**: 
+        ```json
+        [
+          {
+            "id": "integer",
+            "name": "string",
+            "description": "string",
+            "price": "integer",
+            "category": "string"
+          }
+        ]
+        ```
+
+- **GET /products/:id**
+    - Retrieves a single product by ID.
+    - **Response**:
+        ```json
+        {
+          "id": "integer",
+          "name": "string",
+          "description": "string",
+          "price": "integer",
+          "category": "string"
+        }
+        ```
+
+- **PUT /products/:id**
+    - Updates an existing product by ID.
+    - **Request Body**:
+        ```json
+        {
+          "name": "string",
+          "description": "string",
+          "price": "integer",
+          "category": "string"
+        }
+        ```
+    - **Response**: Updated product object.
+
+- **DELETE /products/:id**
+    - Deletes a product by ID.
+    - **Response**: `{ "message": "Product deleted successfully" }`
+
+
+
+## Setup
+
+### 1. Clone the repository
 
 ```bash
-$ pnpm install
+git clone <repository-url>
+cd product_management
 ```
 
-## Compile and run the project
+### 2. Install dependencies
 
 ```bash
-# development
-$ pnpm run start
-
-# watch mode
-$ pnpm run start:dev
-
-# production mode
-$ pnpm run start:prod
+npm install
 ```
 
-## Run tests
+### 3. Set up environment variables
+
+Create a `.env` file at the root of the project and add the following variables:
+
+```plaintext
+PORT=5000
+DATABASE_URL="postgresql://username:password@localhost:5432/database_name?schema=public"
+jwt_secret_key="secret key"
+```
+
+
+
+## Running the Project
+
+To start the server in development mode:
 
 ```bash
-# unit tests
-$ pnpm run test
-
-# e2e tests
-$ pnpm run test:e2e
-
-# test coverage
-$ pnpm run test:cov
+npm run start:dev
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+To run in production mode:
 
 ```bash
-$ pnpm install -g mau
-$ mau deploy
+npm run start:prod
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
 
-## Resources
 
-Check out a few resources that may come in handy when working with NestJS:
+## Testing
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+This project uses **Jest** for unit testing. To run tests:
 
-## Support
+```bash
+npm run test
+```
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+For watching tests as you develop:
 
-## Stay in touch
+```bash
+npm run test:watch
+```
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+For coverage reports:
+
+```bash
+npm run test:cov
+```
+
+
+
+## Configuration
+
+- **Prisma ORM**: The application uses **Prisma** for database migrations and schema management. You can find the schema under `prisma/schema.prisma`. After making changes to the schema, run:
+
+```bash
+npx prisma migrate dev
+```
+
+
 
 ## License
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
-"# product-server-site" 
+This project is licensed under the **UNLICENSED** license.
+
+
+
+## Notes
+
+- **Security Considerations**: Always ensure that your `jwt_secret_key` is kept secret and is not shared or exposed in public repositories.
+- **Database**: Make sure PostgreSQL is installed locally or on a server with the correct credentials to match the `.env` file's `DATABASE_URL`.
+```
+
+
+
+### Key Sections Explained:
+
+1. **Features**: Briefly explains the core features of your API (authentication, product management, etc.).
+2. **Tech Stack**: Lists the core technologies and tools you're using (NestJS, Prisma, PostgreSQL, etc.).
+3. **API Endpoints**: Describes the various RESTful endpoints and their expected request/response formats.
+4. **Setup**: Explains how to set up the project locally (clone the repo, install dependencies, set environment variables).
+5. **Running the Project**: Provides instructions for running the app in different environments.
+6. **Testing**: Instructions for running tests with Jest.
+7. **Configuration**: Explains how to manage the database with Prisma.
+8. **License**: States the project license.
+
+This README is a comprehensive guide for anyone using or developing with the **Product Management API**. It covers setup, endpoints, testing, and environment configurations clearly for developers.
