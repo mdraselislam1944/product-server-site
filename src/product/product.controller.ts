@@ -38,7 +38,6 @@ export class ProductController {
             },
         },
     })
-
     @ApiResponse({
         status: 201,
         description: 'Product created successfully',
@@ -152,7 +151,6 @@ export class ProductController {
         }
     }
 
-
     @Get(':id')
     @ApiOperation({ summary: 'Retrieve a single product by ID' })
     @ApiParam({ name: 'id', description: 'Product ID' })
@@ -253,36 +251,32 @@ export class ProductController {
         }
     })
     @ApiResponse({
-        status: 404,
-        description: 'Product not found',
-        schema: { example: { statusCode: 404, success: false, message: 'Product with ID  not found', errors: [{ field: 'id', message: 'No product found with ID ' }] } }
-    })
-    @ApiResponse({
         status: 400,
-        description: 'Invalid request data',
-        schema: { example: { statusCode: 400, success: false, message: 'Invalid request data', errors: [{ message: 'Validation error' }] } }
-    })
-    @ApiResponse({
-        status: 500,
         description: 'Failed to update product',
-        schema: { example: { statusCode: 500, success: false, message: 'Failed to update product', errors: [{ message: 'Internal server error' }] } }
+        schema: { example: { statusCode: 400, success: false, message: 'Failed to update product', errors: [{ message: 'Validation error' }] } }
     })
-    async updateProduct(
-        @Param('id') id: string,
-        @Body() data: { name: string; description: string; price: number; category: string },
-        @Res() res: Response
-    ) {
+    async updateProduct(@Param('id') id: string, @Body() updateData: any, @Res() res: Response) {
         try {
-            const updatedProduct = await this.productService.updateProduct(+id, data);
+            const product = await this.productService.updateProduct(+id, updateData);
+
+            if (!product) {
+                return sendResponse(res, {
+                    statusCode: HttpStatus.NOT_FOUND,
+                    success: false,
+                    message: `Product with ID ${id} not found`,
+                    errors: [{ field: 'id', message: `No product found with ID ${id}` }],
+                });
+            }
+
             return sendResponse(res, {
                 statusCode: HttpStatus.OK,
                 success: true,
                 message: 'Product updated successfully',
-                data: updatedProduct,
+                data: product,
             });
         } catch (error) {
             return sendResponse(res, {
-                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                statusCode: HttpStatus.BAD_REQUEST,
                 success: false,
                 message: 'Failed to update product',
                 errors: [{ message: error.message }],
@@ -292,41 +286,35 @@ export class ProductController {
 
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Delete(':id')
-    @ApiOperation({ summary: 'Delete a product by ID' })
+    @ApiOperation({ summary: 'Delete an existing product' })
     @ApiParam({ name: 'id', description: 'Product ID' })
     @ApiResponse({
         status: 200,
         description: 'Product deleted successfully',
-        schema: { example: { statusCode: 200, success: true, message: 'Product deleted successfully' } },
+        schema: {
+            example: {
+                statusCode: 200,
+                success: true,
+                message: 'Product deleted successfully',
+            }
+        }
     })
     @ApiResponse({
         status: 404,
         description: 'Product not found',
-        schema: { example: { statusCode: 404, success: false, message: 'Product with ID 1 not found', errors: [{ field: 'id', message: 'No product found with ID ' }] } },
+        schema: { example: { statusCode: 404, success: false, message: 'Product with ID  not found', errors: [{ field: 'id', message: 'No product found with ID ' }] } }
     })
     @ApiResponse({
         status: 500,
         description: 'Failed to delete product',
-        schema: { example: { statusCode: 500, success: false, message: 'Failed to delete product', errors: [{ message: 'Internal server error' }] } },
+        schema: { example: { statusCode: 500, success: false, message: 'Failed to delete product', errors: [{ message: 'Internal server error' }] } }
     })
+    @UsePipes(new ZodValidationPipe(deleteProductSchema))
     async deleteProduct(@Param('id') id: string, @Res() res: Response) {
-        const parsedId = deleteProductSchema.safeParse({ id });
-        if (!parsedId.success) {
-            return sendResponse(res, {
-                statusCode: HttpStatus.BAD_REQUEST,
-                success: false,
-                message: 'Invalid product ID format',
-                errors: parsedId.error.errors.map((err) => ({
-                    field: String(err.path[0]),
-                    message: err.message,
-                })),
-            });
-
-        }
-
         try {
-            const deletedProduct = await this.productService.deleteProduct(+id);
-            if (!deletedProduct) {
+            const deleted = await this.productService.deleteProduct(+id);
+
+            if (!deleted) {
                 return sendResponse(res, {
                     statusCode: HttpStatus.NOT_FOUND,
                     success: false,
@@ -334,6 +322,7 @@ export class ProductController {
                     errors: [{ field: 'id', message: `No product found with ID ${id}` }],
                 });
             }
+
             return sendResponse(res, {
                 statusCode: HttpStatus.OK,
                 success: true,
@@ -348,5 +337,4 @@ export class ProductController {
             });
         }
     }
-
 }

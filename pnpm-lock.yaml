@@ -63,6 +63,9 @@ importers:
         specifier: ^3.23.8
         version: 3.23.8
     devDependencies:
+      '@golevelup/ts-jest':
+        specifier: ^0.6.0
+        version: 0.6.0
       '@nestjs/cli':
         specifier: ^10.0.0
         version: 10.4.7
@@ -337,6 +340,9 @@ packages:
   '@eslint/js@8.57.1':
     resolution: {integrity: sha512-d9zaMRSTIKDLhctzH12MtXvJKSSUhaHcjV+2Z+GK+EEY7XKpP5yR4x+N3TAcHTcu963nIr+TMcCb4DBCYX1z6Q==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
+
+  '@golevelup/ts-jest@0.6.0':
+    resolution: {integrity: sha512-TwJGSPCGd2K+TjYlMvtX7J6K14mLNrQSbknKgXfFX/mdCumRzE6OrMyG1VOFjtCIRMPgreldfVfUdy6tJMbVFA==}
 
   '@humanwhocodes/config-array@0.13.0':
     resolution: {integrity: sha512-DZLEEqFWQFiyK6h5YIeynKx7JlvCYWL0cImfSRXZ9l4Sg2efkFGTuFf6vzXjK1cq6IYkU+Eg/JizXw+TD2vRNw==}
@@ -3268,6 +3274,8 @@ snapshots:
       - supports-color
 
   '@eslint/js@8.57.1': {}
+
+  '@golevelup/ts-jest@0.6.0': {}
 
   '@humanwhocodes/config-array@0.13.0':
     dependencies:
